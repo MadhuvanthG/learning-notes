@@ -43,5 +43,10 @@ const operation = () => ["Hello", "World"]
 makeGenericAsync<Array<string>>(operation).then(value => console.log(value))
 ```
 
+#Useful materials
+React-Typescript cheatsheet - https://github.com/typescript-cheatsheets/react-typescript-cheatsheet
+
+
+
 
  
