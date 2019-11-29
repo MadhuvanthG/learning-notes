@@ -1,4 +1,4 @@
-#Pre-requisites
+# Pre-requisites
 Knowing the basics of generics - go through https://www.typescriptlang.org/docs/handbook/generics.html
 
 #What we will focus on here
@@ -6,7 +6,7 @@ Knowing the basics of generics - go through https://www.typescriptlang.org/docs/
 **How can you use generics to preserve/propagate type information**
 **Generic constraints and why they are useful**
 
-##Type variable
+## Type variable
 
 Consider a function which wraps the given operation in a promise
 resolves with the output of the function
