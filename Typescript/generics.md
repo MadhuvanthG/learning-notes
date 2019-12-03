@@ -41,18 +41,33 @@ const operation = () => ["Hello", "World"]
 makeGenericAsync<Array<string>>(operation).then(resolvedValue => console.log(resolvedValue))
 ```
 
+
+
 ## Interfaces with Generic types
+Similar to functions, interfaces can also have generic types
+A simple usecase for that-
 
-Let's say, we want to write a function that abstracts fetch operation of any given endpoint
-At its simplest form, its signature would be something like
-
+Let's say you define an interface to represent result of an async API call
 ```
-async function performRequest(endpoint: string, options: { params: string[] }): Promise<any> {
-    return fetch(endpoint).then(response => response.json())
+interface Result {
+    data: any
+    isOperationSuccess: boolean
 }
 ```
-Takes name of an endpoint and options (headers etc..) as arguments
-Returns a Promise type
+
+And this is your function that does the API call
+```
+async function performRequest(endpoint: string, options: { params: object }): Promise<Result> {
+    // Fetches the result of endpoint
+    const data = await fetch(endpoint).then(response => response.json())
+
+    // Populates the data and status (isOperationSuccess) and returns
+    return {
+        data: data,
+        isOperationSuccess: true
+    }
+}
+```
 
 Now we want to call a `/getPersons` endpoint (a hypothetical example) 
 that we know will return a value of type Person
@@ -62,30 +77,47 @@ interface Person {
     lastName: string
 }
 
-performRequest("getPersons", {params: {id: "1"}}).then(person => person.????)
+performRequest("getPersons", {params: {id: "1"}}).then((result: Result) => result.data.????)
 ```
 
 We fetch response of `/getPersons` endpoint using `performRequest`, but
-TS can't infer the type of the resolved value to be `Person`
+TS can't infer the type of the resolved value (i.e. `result.data`) to be `Person`
 That means, we can NOT confidently code (aka Typescript can't provide code completion options which can really be useful)
-person.firstName or person.lastName
+result.data.firstName or result.data.lastName
 
-Because our `performRequest` is meant to work for all endpoints in our application,
-it has no way (yet) to specify what would be the type of the resolved value, hence it returns `Promise<any>`
+How do we define what is the expected type of `data` when a given endpoint is called?
+Using Generic interfaces. Look at the modified signature of the interface and function below.
+Note- Generic type on an interface is visible to all properties of the interface
 
-Generics is the answer to this problem. New version of the function takes a generic type
-that represents type of value a given endpoint is expected to return
 ```
-async function performRequest<TData>(endpoint: string, options: RequestOptions): Promise<TData> {
-    return fetch(endpoint).then<TData>(response => response.json())
+interface Result<T> {
+    data: T
+    status: boolean
 }
 ```
-Here we are basically using generics to assert that `getPersons` endpoint would return a JSON object of type `Person`
+
+```
+async function performRequest<T>(endpoint: string, options: { params: object }): Promise<Result<T>> {
+    const data = await fetch(endpoint).then<T>(response => response.json())
+
+    return {
+        data: data,
+        status: true
+    }
+}
+```
+
+Call the performRequest now and there you could see, TS can infer the type of `result` to be `Result<Person>`
+```
+performRequest<Person>("getPersons", {params: {id: "1"}}).then((result: Result<Person>) => console.log(result.data.firstName))
+```
+Here we have explicitly annotated the type, but you don't have to.
 
 **Caveat**: At Runtime, it could be different based on how the endpoint works but Typescript can't really 
 save you from that. Because well, it's compile time checking.
 In this case, what it still gives you though is better readability 
 and documentation leading to easy maintenance as well
+
 
 
 
